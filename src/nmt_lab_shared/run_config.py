@@ -8,7 +8,7 @@ from pathlib import Path
 import yaml
 
 
-def _created_at_utc() -> str:
+def _current_time() -> str:
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
@@ -53,7 +53,7 @@ def _build_run_config_payload(
 ) -> dict[str, object]:
     return {
         "schema_version": schema_version,
-        "created_at_utc": _created_at_utc(),
+        "created_at_utc": _current_time(),
         f"{git_key_prefix}_git_commit": _current_git_commit(repo_root),
         f"{git_key_prefix}_git_status": _current_git_status(repo_root),
         **payload,
