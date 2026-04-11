@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from nmt_lab_shared.run_config import read_run_config, write_run_config
+from nmt_lab_shared.run_config import git_head_commit, git_status, read_run_config, write_run_config
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -40,3 +40,12 @@ def test_write_run_config_writes_yaml_file(tmp_path: Path):
     assert payload["created_at_utc"].endswith("Z")
     assert "nmt_lab_shared_git_commit" in payload
     assert payload["nmt_lab_shared_git_status"] in {"no local changes", "local changes exist"}
+
+
+def test_git_head_commit_returns_commit_hash_or_none():
+    commit = git_head_commit(Path(__file__).resolve().parents[1])
+    assert commit is None or len(commit) == 40
+
+
+def test_git_status_returns_known_state():
+    assert git_status(Path(__file__).resolve().parents[1]) in {"no local changes", "local changes exist"}

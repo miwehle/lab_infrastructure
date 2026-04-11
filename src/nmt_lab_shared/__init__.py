@@ -17,7 +17,7 @@ from nmt_lab_shared.compute_metrics import (
     get_gpu_util,
 )
 from nmt_lab_shared.logging import close_logger, get_logger, log_calls
-from nmt_lab_shared.run_config import read_run_config, write_run_config
+from nmt_lab_shared.run_config import git_head_commit, git_status, read_run_config, write_run_config
 
 __all__ = [
     "get_logger",
@@ -35,6 +35,8 @@ __all__ = [
     "total_time",
     "reset_clocks",
     "is_in_use",
+    "git_head_commit",
+    "git_status",
     "read_run_config",
     "write_run_config",
 ]

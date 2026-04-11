@@ -12,7 +12,7 @@ def _current_time() -> str:
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
-def _current_git_commit(repo_root: str | Path) -> str | None:
+def git_head_commit(repo_root: str | Path) -> str | None:
     try:
         out = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL, text=True, cwd=str(Path(repo_root))
@@ -23,7 +23,7 @@ def _current_git_commit(repo_root: str | Path) -> str | None:
     return commit if commit else None
 
 
-def _current_git_status(repo_root: str | Path) -> str:
+def git_status(repo_root: str | Path) -> str:
     try:
         out = subprocess.check_output(
             ["git", "status", "--porcelain"], stderr=subprocess.DEVNULL, text=True, cwd=str(Path(repo_root))
@@ -44,8 +44,8 @@ def _build_run_config_payload(
     return {
         "schema_version": schema_version,
         "created_at_utc": _current_time(),
-        f"{git_key_prefix}_git_commit": _current_git_commit(repo_root),
-        f"{git_key_prefix}_git_status": _current_git_status(repo_root),
+        f"{git_key_prefix}_git_commit": git_head_commit(repo_root),
+        f"{git_key_prefix}_git_status": git_status(repo_root),
         **payload,
     }
 
