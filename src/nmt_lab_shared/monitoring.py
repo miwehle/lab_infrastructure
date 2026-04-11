@@ -29,11 +29,11 @@ def _now() -> float:
 class Clock:
     def __init__(self, name: str, *, now: float):
         self.name = name
-        self.reused = False
         self._started_at = now
         self._last_lap_at = now
         self._stopped_at: float | None = None
         self._lap_times: dict[LapLabel, float] = defaultdict(float)
+        self.reused = False
 
     @property
     def stopped(self) -> bool:
@@ -65,9 +65,6 @@ class _ClockRegistry:
         self._clocks_by_name[name].append(clock)
         self._running_clocks[name] = clock
         return clock
-
-    def is_in_use(self, name: str) -> bool:
-        return name in self._running_clocks
 
     def lap(self, clock: Clock, label: LapLabel = None) -> float:
         if clock.stopped:
@@ -103,16 +100,15 @@ class _ClockRegistry:
         self._clocks_by_name.clear()
         self._running_clocks.clear()
 
+    def is_in_use(self, name: str) -> bool:
+        return name in self._running_clocks
+
 
 _registry = _ClockRegistry(_now)
 
 
 def get_clock(name: str) -> Clock:
     return _registry.get_clock(name)
-
-
-def is_in_use(name: str) -> bool:
-    return _registry.is_in_use(name)
 
 
 def lap(clock: Clock, label: LapLabel = None) -> float:
@@ -133,3 +129,8 @@ def total_time(name: str) -> float:
 
 def reset_clocks() -> None:
     _registry.reset()
+
+
+def is_in_use(name: str) -> bool:
+    """Return whether a clock with this name is currently running."""
+    return _registry.is_in_use(name)
