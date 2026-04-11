@@ -3,7 +3,11 @@
 from nmt_lab_shared.logging import close_logger, get_logger, log_calls
 from nmt_lab_shared.monitoring import (
     Clock,
+    detect_compute_hardware,
+    estimate_compute_units,
+    estimate_cost,
     get_clock,
+    get_gpu_util,
     is_in_use,
     lap,
     reset_clocks,
@@ -18,6 +22,10 @@ __all__ = [
     "close_logger",
     "log_calls",
     "Clock",
+    "get_gpu_util",
+    "detect_compute_hardware",
+    "estimate_compute_units",
+    "estimate_cost",
     "get_clock",
     "lap",
     "stop",
