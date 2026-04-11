@@ -13,17 +13,6 @@ _LOG_FORMAT = "%(asctime)s %(levelname)s [%(name)s] %(message)s"
 _LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
-def _resolve_logger(logger: logging.Logger | str) -> logging.Logger:
-    return logging.getLogger(logger) if isinstance(logger, str) else logger
-
-
-def close_logger(logger: logging.Logger | str) -> None:
-    resolved_logger = _resolve_logger(logger)
-    for handler in resolved_logger.handlers[:]:
-        resolved_logger.removeHandler(handler)
-        handler.close()
-
-
 def get_logger(name: str, *, log_path: str | Path | None = None, stream: bool = False) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
@@ -45,6 +34,13 @@ def get_logger(name: str, *, log_path: str | Path | None = None, stream: bool = 
         logger.addHandler(file_handler)
 
     return logger
+
+
+def close_logger(logger: logging.Logger | str) -> None:
+    resolved_logger = _resolve_logger(logger)
+    for handler in resolved_logger.handlers[:]:
+        resolved_logger.removeHandler(handler)
+        handler.close()
 
 
 def log_calls(
@@ -69,3 +65,7 @@ def log_calls(
         return wrapper
 
     return decorate
+
+
+def _resolve_logger(logger: logging.Logger | str) -> logging.Logger:
+    return logging.getLogger(logger) if isinstance(logger, str) else logger
