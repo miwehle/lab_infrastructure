@@ -1,5 +1,6 @@
 """Gemeinsame Infrastruktur fuer die nmt_lab-Projekte."""
 
+from nmt_lab_shared.logging import close_logger, get_logger, log_calls
 from nmt_lab_shared.monitoring import (
     Clock,
     get_clock,
@@ -13,6 +14,9 @@ from nmt_lab_shared.monitoring import (
 from nmt_lab_shared.run_config import read_run_config, write_run_config
 
 __all__ = [
+    "get_logger",
+    "close_logger",
+    "log_calls",
     "Clock",
     "get_clock",
     "lap",
