@@ -1,4 +1,4 @@
-﻿# lab_infrastructure
+# lab_infrastructure
 
 Gemeinsame Infrastruktur fuer die Projekte im `nmt_lab`-Workspace.
 

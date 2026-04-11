@@ -1,4 +1,4 @@
-﻿"""Gemeinsame Infrastruktur fuer die nmt_lab-Projekte."""
+"""Gemeinsame Infrastruktur fuer die nmt_lab-Projekte."""
 
 from lab_infrastructure.clock import (
     Clock,
