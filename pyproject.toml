@@ -24,7 +24,7 @@ testpaths = ["tests"]
 addopts = "--basetemp=.local_tmp/pytest -p no:cacheprovider"
 
 [tool.ruff]
-line-length = 88
+line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
