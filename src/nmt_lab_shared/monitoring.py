@@ -16,8 +16,8 @@ Example 1:
     stop(clock, "optimizer")
 
     # evaluate
-    total_lap_times("train") -> {"forward": 1.0, "backward": 1.6, "optimizer": 0.2}
-    total_time("train") -> 2.8
+    total_lap_times("train") -> {"forward": 471.1, "backward": 753.76, "optimizer": 94.22}
+    total_time("train") -> 1319.08
 
 Example 2:
     # measure
@@ -25,9 +25,10 @@ Example 2:
     stop(clock)
 
     # evaluate
-    total_lap_times("train") -> {None: 2.8}
-    total_time("train") -> 2.8
+    total_lap_times("train") -> {None: 1319.08}
+    total_time("train") -> 1319.08
 
+All durations are measured in seconds.
 Unlabeled laps are aggregated under None.
 """
 
