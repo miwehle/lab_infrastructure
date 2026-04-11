@@ -40,19 +40,29 @@ class TestClock:
         clock = get_clock("train")
         lap(clock, "forward")
         lap(clock)
-        stop(clock)
+        stop(clock, "optimizer")
         second_clock = get_clock("train")
         lap(second_clock, "forward")
 
-        assert total_lap_times("train") == {"forward": 2.0, None: 0.5}
+        assert total_lap_times("train") == {"forward": 2.0, None: 0.5, "optimizer": 0.5}
 
     def test_total_time_counts_only_stopped_clocks(self, monkeypatch):
         self._set_time_source(monkeypatch, 0.0, 2.0, 3.0, 4.5)
 
         first_clock = get_clock("train")
-        stop(first_clock)
+        stop(first_clock, "optimizer")
         second_clock = get_clock("train")
         lap(second_clock, "forward")
 
         assert total_time("train") == 2.0
         assert is_in_use("train") is True
+
+    def test_stop_adds_last_open_lap_with_label(self, monkeypatch):
+        self._set_time_source(monkeypatch, 0.0, 1.0, 3.5)
+
+        clock = get_clock("train")
+        lap(clock, "forward")
+        stop(clock, "optimizer")
+
+        assert total_lap_times("train") == {"forward": 1.0, "optimizer": 2.5}
+        assert total_time("train") == 3.5

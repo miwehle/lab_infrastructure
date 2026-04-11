@@ -6,6 +6,21 @@ from time import perf_counter
 
 type LapLabel = str | None
 
+"""Lightweight timing utilities for bottleneck analysis.
+
+Happy path:
+    clock = get_clock("train")
+    lap(clock, "forward")
+    lap(clock, "backward")
+    stop(clock, "optimizer")
+
+Evaluation:
+    total_lap_times("train") -> {"forward": 2.3, "backward": 4.1, "optimizer": 0.7}
+    total_time("train") -> 7.8
+
+Unlabeled laps are aggregated under None.
+"""
+
 
 def _now() -> float:
     return perf_counter()
@@ -63,10 +78,13 @@ class _ClockRegistry:
         clock._last_lap_at = now
         return duration
 
-    def stop(self, clock: Clock) -> float | None:
+    def stop(self, clock: Clock, label: LapLabel = None) -> float | None:
         if clock.stopped:
             return clock.total_time
         now = self._time_source()
+        duration = now - clock._last_lap_at
+        clock._lap_times[label] += duration
+        clock._last_lap_at = now
         clock._stopped_at = now
         self._running_clocks.pop(clock.name, None)
         return clock.total_time
@@ -101,8 +119,8 @@ def lap(clock: Clock, label: LapLabel = None) -> float:
     return _registry.lap(clock, label)
 
 
-def stop(clock: Clock) -> float | None:
-    return _registry.stop(clock)
+def stop(clock: Clock, label: LapLabel = None) -> float | None:
+    return _registry.stop(clock, label)
 
 
 def total_lap_times(name: str) -> dict[LapLabel, float]:
