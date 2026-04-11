@@ -3,19 +3,21 @@ from __future__ import annotations
 import subprocess
 from datetime import UTC, datetime
 
-import nmt_lab_shared.monitoring as clock_module
-from nmt_lab_shared.monitoring import (
-    detect_compute_hardware,
-    estimate_compute_units,
-    estimate_cost,
+import nmt_lab_shared.clock as clock_module
+from nmt_lab_shared.clock import (
     get_clock,
-    get_gpu_util,
     is_in_use,
     lap,
     reset_clocks,
     stop,
     total_lap_times,
     total_time,
+)
+from nmt_lab_shared.compute_metrics import (
+    detect_compute_hardware,
+    estimate_compute_units,
+    estimate_cost,
+    get_gpu_util,
 )
 
 

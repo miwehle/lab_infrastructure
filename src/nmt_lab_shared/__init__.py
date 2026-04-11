@@ -1,13 +1,8 @@
 """Gemeinsame Infrastruktur fuer die nmt_lab-Projekte."""
 
-from nmt_lab_shared.logging import close_logger, get_logger, log_calls
-from nmt_lab_shared.monitoring import (
+from nmt_lab_shared.clock import (
     Clock,
-    detect_compute_hardware,
-    estimate_compute_units,
-    estimate_cost,
     get_clock,
-    get_gpu_util,
     is_in_use,
     lap,
     reset_clocks,
@@ -15,6 +10,13 @@ from nmt_lab_shared.monitoring import (
     total_lap_times,
     total_time,
 )
+from nmt_lab_shared.compute_metrics import (
+    detect_compute_hardware,
+    estimate_compute_units,
+    estimate_cost,
+    get_gpu_util,
+)
+from nmt_lab_shared.logging import close_logger, get_logger, log_calls
 from nmt_lab_shared.run_config import read_run_config, write_run_config
 
 __all__ = [

@@ -7,7 +7,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Any
 
-from .monitoring import Clock, get_clock, stop
+from .clock import Clock, get_clock, stop
 
 _LOG_FORMAT = "%(asctime)s %(levelname)s [%(name)s] %(message)s"
 _LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"

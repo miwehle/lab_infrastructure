@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import nmt_lab_shared.monitoring as monitoring_module
+import nmt_lab_shared.clock as clock_module
+from nmt_lab_shared.clock import get_clock, reset_clocks, total_time
 from nmt_lab_shared.logging import close_logger, get_logger, log_calls
-from nmt_lab_shared.monitoring import get_clock, reset_clocks, total_time
 
 
 class TestLogging:
@@ -51,10 +51,8 @@ class TestLogging:
 
     def _set_time_source(self, monkeypatch, *values: float):
         times = iter(values)
-        monkeypatch.setattr(monitoring_module, "_now", lambda: next(times))
-        monkeypatch.setattr(
-            monitoring_module, "_registry", monitoring_module._ClockRegistry(monitoring_module._now)
-        )
+        monkeypatch.setattr(clock_module, "_now", lambda: next(times))
+        monkeypatch.setattr(clock_module, "_registry", clock_module._ClockRegistry(clock_module._now))
 
     def test_log_calls_logs_start_and_finish(self, tmp_path: Path, monkeypatch):
         self._set_time_source(monkeypatch, 0.0, 0.25)
