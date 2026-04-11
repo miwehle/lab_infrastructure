@@ -8,15 +8,25 @@ type LapLabel = str | None
 
 """Lightweight timing utilities for bottleneck analysis.
 
-Happy path:
+Example 1:
+    # measure
     clock = get_clock("train")
     lap(clock, "forward")
     lap(clock, "backward")
     stop(clock, "optimizer")
 
-Evaluation:
-    total_lap_times("train") -> {"forward": 2.3, "backward": 4.1, "optimizer": 0.7}
-    total_time("train") -> 7.1
+    # evaluate
+    total_lap_times("train") -> {"forward": 1.0, "backward": 1.6, "optimizer": 0.2}
+    total_time("train") -> 2.8
+
+Example 2:
+    # measure
+    clock = get_clock("train")
+    stop(clock)
+
+    # evaluate
+    total_lap_times("train") -> {None: 2.8}
+    total_time("train") -> 2.8
 
 Unlabeled laps are aggregated under None.
 """
