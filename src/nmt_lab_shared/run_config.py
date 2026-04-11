@@ -15,10 +15,7 @@ def _current_time() -> str:
 def _current_git_commit(repo_root: str | Path) -> str | None:
     try:
         out = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"],
-            stderr=subprocess.DEVNULL,
-            text=True,
-            cwd=str(Path(repo_root)),
+            ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL, text=True, cwd=str(Path(repo_root))
         )
     except Exception:
         return None
@@ -29,10 +26,7 @@ def _current_git_commit(repo_root: str | Path) -> str | None:
 def _current_git_status(repo_root: str | Path) -> str:
     try:
         out = subprocess.check_output(
-            ["git", "status", "--porcelain"],
-            stderr=subprocess.DEVNULL,
-            text=True,
-            cwd=str(Path(repo_root)),
+            ["git", "status", "--porcelain"], stderr=subprocess.DEVNULL, text=True, cwd=str(Path(repo_root))
         )
     except Exception:
         return "local changes exist"
@@ -45,11 +39,7 @@ def read_run_config(path: str | Path) -> dict[str, object]:
 
 
 def _build_run_config_payload(
-    payload: Mapping[str, object],
-    *,
-    repo_root: str | Path,
-    git_key_prefix: str,
-    schema_version: str = "1",
+    payload: Mapping[str, object], *, repo_root: str | Path, git_key_prefix: str, schema_version: str = "1"
 ) -> dict[str, object]:
     return {
         "schema_version": schema_version,
@@ -71,10 +61,7 @@ def write_run_config(
     target_path = Path(path)
     target_path.parent.mkdir(parents=True, exist_ok=True)
     full_payload = _build_run_config_payload(
-        payload,
-        repo_root=repo_root,
-        git_key_prefix=git_key_prefix,
-        schema_version=schema_version,
+        payload, repo_root=repo_root, git_key_prefix=git_key_prefix, schema_version=schema_version
     )
     with target_path.open("w", encoding="utf-8") as handle:
         yaml.safe_dump(full_payload, handle, sort_keys=False, allow_unicode=True)
