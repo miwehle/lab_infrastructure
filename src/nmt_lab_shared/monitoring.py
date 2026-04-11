@@ -16,7 +16,7 @@ Happy path:
 
 Evaluation:
     total_lap_times("train") -> {"forward": 2.3, "backward": 4.1, "optimizer": 0.7}
-    total_time("train") -> 7.8
+    total_time("train") -> 7.1
 
 Unlabeled laps are aggregated under None.
 """
