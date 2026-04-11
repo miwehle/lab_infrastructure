@@ -1,6 +1,6 @@
-"""Gemeinsame Infrastruktur fuer die nmt_lab-Projekte."""
+﻿"""Gemeinsame Infrastruktur fuer die nmt_lab-Projekte."""
 
-from nmt_lab_shared.clock import (
+from lab_infrastructure.clock import (
     Clock,
     get_clock,
     is_in_use,
@@ -10,14 +10,14 @@ from nmt_lab_shared.clock import (
     total_lap_times,
     total_time,
 )
-from nmt_lab_shared.compute_metrics import (
+from lab_infrastructure.compute_metrics import (
     detect_compute_hardware,
     estimate_compute_units,
     estimate_cost,
     get_gpu_util,
 )
-from nmt_lab_shared.logging import close_logger, get_logger, log_calls
-from nmt_lab_shared.run_config import git_head_commit, git_status, read_run_config, write_run_config
+from lab_infrastructure.logging import close_logger, get_logger, log_calls
+from lab_infrastructure.run_config import git_head_commit, git_status, read_run_config, write_run_config
 
 __all__ = [
     "get_logger",
@@ -40,3 +40,4 @@ __all__ = [
     "read_run_config",
     "write_run_config",
 ]
+

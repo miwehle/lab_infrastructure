@@ -1,10 +1,10 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from pathlib import Path
 
-import nmt_lab_shared.clock as clock_module
-from nmt_lab_shared.clock import get_clock, reset_clocks, total_time
-from nmt_lab_shared.logging import close_logger, get_logger, log_calls
+import lab_infrastructure.clock as clock_module
+from lab_infrastructure.clock import get_clock, reset_clocks, total_time
+from lab_infrastructure.logging import close_logger, get_logger, log_calls
 
 
 class TestLogging:
@@ -93,3 +93,4 @@ class TestLogging:
         train()
 
         assert total_time("custom") == 3.0
+

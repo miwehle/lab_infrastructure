@@ -1,10 +1,10 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import subprocess
 from datetime import UTC, datetime
 
-import nmt_lab_shared.clock as clock_module
-from nmt_lab_shared.clock import (
+import lab_infrastructure.clock as clock_module
+from lab_infrastructure.clock import (
     get_clock,
     is_in_use,
     lap,
@@ -13,7 +13,7 @@ from nmt_lab_shared.clock import (
     total_lap_times,
     total_time,
 )
-from nmt_lab_shared.compute_metrics import (
+from lab_infrastructure.compute_metrics import (
     detect_compute_hardware,
     estimate_compute_units,
     estimate_cost,
@@ -141,3 +141,4 @@ class TestMonitoringHelpers:
 
     def test_estimate_cost_returns_none_for_negative_euro_per_cu(self):
         assert estimate_cost(12.5, -1.0) is None
+

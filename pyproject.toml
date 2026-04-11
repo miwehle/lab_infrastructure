@@ -1,9 +1,9 @@
-[build-system]
+﻿[build-system]
 requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "nmt-lab-shared"
+name = "lab-infrastructure"
 version = "0.1.0"
 description = "Gemeinsame Infrastruktur fuer die nmt_lab-Projekte"
 readme = "README.md"
@@ -34,3 +34,4 @@ ignore = []
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
