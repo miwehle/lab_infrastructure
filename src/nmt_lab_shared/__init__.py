@@ -1,5 +1,26 @@
 """Gemeinsame Infrastruktur fuer die nmt_lab-Projekte."""
 
+from nmt_lab_shared.monitoring import (
+    Clock,
+    get_clock,
+    is_in_use,
+    lap,
+    reset_clocks,
+    stop,
+    total_lap_times,
+    total_time,
+)
 from nmt_lab_shared.run_config import read_run_config, write_run_config
 
-__all__ = ["read_run_config", "write_run_config"]
+__all__ = [
+    "Clock",
+    "get_clock",
+    "is_in_use",
+    "lap",
+    "read_run_config",
+    "reset_clocks",
+    "stop",
+    "total_lap_times",
+    "total_time",
+    "write_run_config",
+]
