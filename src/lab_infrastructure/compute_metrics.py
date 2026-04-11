@@ -49,10 +49,10 @@ def detect_compute_hardware() -> str:
 def estimate_compute_units(
     hardware: str, start_time: datetime, end_time: datetime | None = None
 ) -> float | None:
-    rate = _get_compute_unit_rate(hardware)
+    rate = _COMPUTE_UNIT_RATES.get(hardware)
     if rate is None:
         return None
-    end = end_time or _current_datetime(start_time)
+    end = end_time or (datetime.now(tz=start_time.tzinfo) if start_time.tzinfo is not None else datetime.now())
     elapsed_seconds = (end - start_time).total_seconds()
     if elapsed_seconds < 0:
         return None
@@ -63,11 +63,3 @@ def estimate_cost(compute_units: float | None, euro_per_cu: float = 0.10) -> flo
     if compute_units is None or euro_per_cu < 0:
         return None
     return compute_units * euro_per_cu
-
-
-def _get_compute_unit_rate(hardware: str) -> float | None:
-    return _COMPUTE_UNIT_RATES.get(hardware)
-
-
-def _current_datetime(start_time: datetime) -> datetime:
-    return datetime.now(tz=start_time.tzinfo) if start_time.tzinfo is not None else datetime.now()
