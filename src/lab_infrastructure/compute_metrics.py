@@ -3,8 +3,7 @@ from __future__ import annotations
 import subprocess
 from datetime import datetime
 
-# TODO update for H100
-_COMPUTE_UNIT_RATES = {"T4": 1.8, "V100": 5.0, "A100": 7.5, "H100": 22.5, "RTXPRO6000": 8.7, "CPU": 0.5}
+_COMPUTE_UNIT_RATES = {"T4": 1.8, "V100": 5.0, "A100": 7.5, "H100": 18.1, "RTXPRO6000": 8.7, "CPU": 0.5}
 
 
 def get_gpu_util() -> int | None:
