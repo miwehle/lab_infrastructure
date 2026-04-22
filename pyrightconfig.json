@@ -1,0 +1,10 @@
+{
+  "extends": "../pyrightconfig.json",
+  "include": ["src", "tests"],
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": ["src", "../translator/src", "../data_preprocessor/src", "../model_based_curation/src"]
+    }
+  ]
+}
