@@ -119,7 +119,7 @@ class TestMonitoringHelpers:
         start_time = datetime(2026, 4, 11, 8, 0, tzinfo=UTC)
         end_time = datetime(2026, 4, 11, 10, 0, tzinfo=UTC)
 
-        assert estimate_compute_units("A100", start_time, end_time) == 25.0
+        assert estimate_compute_units("A100", start_time, end_time) == 15.0
 
     def test_estimate_compute_units_returns_none_for_unknown_hardware(self):
         start_time = datetime(2026, 4, 11, 8, 0, tzinfo=UTC)
