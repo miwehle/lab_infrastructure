@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
+from pydantic import TypeAdapter, ValidationError
 
 
 def git_head_commit(repo_root: str | Path) -> str | None:
@@ -32,6 +33,15 @@ def git_status(repo_root: str | Path) -> str:
 def read_run_config(path: str | Path) -> dict[str, object]:
     with Path(path).open("r", encoding="utf-8") as handle:
         return yaml.safe_load(handle) or {}
+
+
+def read_run_config_as[T](path: str | Path, config_type: type[T]) -> T:
+    config_path = Path(path)
+    payload = read_run_config(config_path)
+    try:
+        return TypeAdapter(config_type).validate_python(payload)
+    except ValidationError as exc:
+        raise ValueError(f"Invalid config in {config_path}: {exc}") from exc
 
 
 def write_run_config(

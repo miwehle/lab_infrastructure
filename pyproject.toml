@@ -9,6 +9,7 @@ description = "Gemeinsame Infrastruktur fuer die nmt_lab-Projekte"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "pydantic",
     "pyyaml",
 ]
 

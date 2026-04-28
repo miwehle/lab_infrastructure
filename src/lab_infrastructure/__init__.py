@@ -17,7 +17,13 @@ from lab_infrastructure.compute_metrics import (
     get_gpu_util,
 )
 from lab_infrastructure.logging import close_logger, get_logger, log_calls
-from lab_infrastructure.run_config import git_head_commit, git_status, read_run_config, write_run_config
+from lab_infrastructure.run_config import (
+    git_head_commit,
+    git_status,
+    read_run_config,
+    read_run_config_as,
+    write_run_config,
+)
 
 __all__ = [
     "get_logger",
@@ -38,6 +44,6 @@ __all__ = [
     "git_head_commit",
     "git_status",
     "read_run_config",
+    "read_run_config_as",
     "write_run_config",
 ]
-
