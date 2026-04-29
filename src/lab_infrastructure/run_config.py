@@ -46,10 +46,8 @@ def read_run_config_as[T](path: str | Path, config_type: type[T]) -> T:
         raise ValueError(f"Invalid config in {config_path}: {exc}") from exc
 
 
-def run[T, R](runner: Callable[[T], R], config_type: type[T] | None = None) -> R:
+def run[T, R](runner: Callable[[T], R], config_path: str | Path, config_type: type[T] | None = None) -> R:
     """Call a runner function with YAML config validation.
-
-    The YAML path is given by a command-line parameter.
 
     The YAML payload is validated against the config type with Pydantic's
     TypeAdapter, so config fields are type-checked before the runner is called.
@@ -74,11 +72,16 @@ def run[T, R](runner: Callable[[T], R], config_type: type[T] | None = None) -> R
             message = f"Could not infer config type {config_name} from package {package_name}"
             raise ValueError(message) from exc
 
+    return runner(read_run_config_as(config_path, config_type or infer_run_config_type()))
+
+
+def run_cli[T, R](runner: Callable[[T], R], config_type: type[T] | None = None) -> R:
+    """Call a runner function with the YAML path given by a command-line parameter."""
     if len(sys.argv) != 2:
         print(f"Usage: python {sys.argv[0]} <config-path>")
         raise SystemExit(1)
     try:
-        return runner(read_run_config_as(Path(sys.argv[1]), config_type or infer_run_config_type()))
+        return run(runner, Path(sys.argv[1]), config_type)
     except Exception as exc:
         print(f"{Path(sys.argv[0]).stem.replace('_', ' ').capitalize()} failed: {exc}")
         raise SystemExit(1) from exc

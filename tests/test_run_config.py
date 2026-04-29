@@ -16,6 +16,7 @@ from lab_infrastructure.run_config import (
     read_run_config,
     read_run_config_as,
     run,
+    run_cli,
     write_run_config,
 )
 
@@ -56,13 +57,11 @@ def test_read_run_config_as_rejects_unknown_field(tmp_path: Path):
         read_run_config_as(config_path, ExampleConfig)
 
 
-def test_run_validates_and_runs(tmp_path: Path, monkeypatch):
+def test_run_validates_and_runs(tmp_path: Path):
     config_path = tmp_path / "input_config.yaml"
     config_path.write_text(yaml.safe_dump({"dataset": "demo", "batch_size": 64}), encoding="utf-8")
 
-    monkeypatch.setattr(sys, "argv", ["train.py", str(config_path)])
-
-    assert run(lambda config: (config.dataset, config.batch_size), ExampleConfig) == ("demo", 64)
+    assert run(lambda config: (config.dataset, config.batch_size), config_path, ExampleConfig) == ("demo", 64)
 
 
 def test_run_infers_config_type(tmp_path: Path, monkeypatch):
@@ -71,26 +70,25 @@ def test_run_infers_config_type(tmp_path: Path, monkeypatch):
     monkeypatch.setitem(sys.modules, "example_package", package)
     config_path = tmp_path / "input_config.yaml"
     config_path.write_text(yaml.safe_dump({"dataset": "demo"}), encoding="utf-8")
-    monkeypatch.setattr(sys, "argv", ["example_runner.py", str(config_path)])
 
     def example_runner(config: ExampleRunnerRunConfig) -> str:
         return config.dataset
 
     example_runner.__module__ = "example_package.api"
 
-    assert run(example_runner) == "demo"
+    assert run(example_runner, config_path) == "demo"
 
 
-def test_run_raises_with_usage_when_argument_is_missing(monkeypatch, capsys):
+def test_run_cli_raises_with_usage_when_argument_is_missing(monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["train.py"])
 
     with pytest.raises(SystemExit, match="1"):
-        run(lambda config: config, ExampleConfig)
+        run_cli(lambda config: config, ExampleConfig)
 
     assert capsys.readouterr().out == "Usage: python train.py <config-path>\n"
 
 
-def test_run_raises_with_script_name_in_error(monkeypatch, capsys, tmp_path: Path):
+def test_run_cli_raises_with_script_name_in_error(monkeypatch, capsys, tmp_path: Path):
     config_path = tmp_path / "input_config.yaml"
     config_path.write_text(yaml.safe_dump({"dataset": "demo"}), encoding="utf-8")
     monkeypatch.setattr(sys, "argv", ["comet_score.py", str(config_path)])
@@ -99,7 +97,7 @@ def test_run_raises_with_script_name_in_error(monkeypatch, capsys, tmp_path: Pat
         raise ValueError("boom")
 
     with pytest.raises(SystemExit, match="1"):
-        run(fail, ExampleConfig)
+        run_cli(fail, ExampleConfig)
 
     assert capsys.readouterr().out == "Comet score failed: boom\n"
 
