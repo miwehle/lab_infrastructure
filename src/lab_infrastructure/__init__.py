@@ -22,6 +22,7 @@ from lab_infrastructure.run_config import (
     git_status,
     read_run_config,
     read_run_config_as,
+    run_config_cli,
     write_run_config,
 )
 
@@ -43,6 +44,7 @@ __all__ = [
     "is_in_use",
     "git_head_commit",
     "git_status",
+    "run_config_cli",
     "read_run_config",
     "read_run_config_as",
     "write_run_config",

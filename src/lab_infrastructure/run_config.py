@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import subprocess
-from collections.abc import Mapping
+import sys
+from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -42,6 +43,17 @@ def read_run_config_as[T](path: str | Path, config_type: type[T]) -> T:
         return TypeAdapter(config_type).validate_python(payload)
     except ValidationError as exc:
         raise ValueError(f"Invalid config in {config_path}: {exc}") from exc
+
+
+def run_config_cli[T, R](runner: Callable[[T], R], config_type: type[T]) -> R:
+    if len(sys.argv) != 2:
+        print(f"Usage: python {sys.argv[0]} <config-path>")
+        raise SystemExit(1)
+    try:
+        return runner(read_run_config_as(Path(sys.argv[1]), config_type))
+    except Exception as exc:
+        print(f"{Path(sys.argv[0]).stem.replace('_', ' ').capitalize()} failed: {exc}")
+        raise SystemExit(1) from exc
 
 
 def write_run_config(
