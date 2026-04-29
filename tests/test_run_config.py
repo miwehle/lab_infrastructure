@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import types
 from dataclasses import asdict
 from pathlib import Path
 
@@ -23,6 +24,11 @@ from lab_infrastructure.run_config import (
 class ExampleConfig:
     dataset: str
     batch_size: int = 32
+
+
+@dataclass(frozen=True, kw_only=True, config=ConfigDict(extra="forbid"))
+class ExampleRunnerRunConfig:
+    dataset: str
 
 
 def test_read_run_config_reads_yaml_file(tmp_path: Path):
@@ -57,6 +63,22 @@ def test_run_validates_and_runs(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(sys, "argv", ["train.py", str(config_path)])
 
     assert run(lambda config: (config.dataset, config.batch_size), ExampleConfig) == ("demo", 64)
+
+
+def test_run_infers_config_type(tmp_path: Path, monkeypatch):
+    package = types.ModuleType("example_package")
+    package.ExampleRunnerRunConfig = ExampleRunnerRunConfig
+    monkeypatch.setitem(sys.modules, "example_package", package)
+    config_path = tmp_path / "input_config.yaml"
+    config_path.write_text(yaml.safe_dump({"dataset": "demo"}), encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["example_runner.py", str(config_path)])
+
+    def example_runner(config: ExampleRunnerRunConfig) -> str:
+        return config.dataset
+
+    example_runner.__module__ = "example_package.api"
+
+    assert run(example_runner) == "demo"
 
 
 def test_run_raises_with_usage_when_argument_is_missing(monkeypatch, capsys):

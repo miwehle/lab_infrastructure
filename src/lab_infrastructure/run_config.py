@@ -4,6 +4,7 @@ import subprocess
 import sys
 from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
+from importlib import import_module
 from pathlib import Path
 
 import yaml
@@ -45,12 +46,39 @@ def read_run_config_as[T](path: str | Path, config_type: type[T]) -> T:
         raise ValueError(f"Invalid config in {config_path}: {exc}") from exc
 
 
-def run[T, R](runner: Callable[[T], R], config_type: type[T]) -> R:
+def run[T, R](runner: Callable[[T], R], config_type: type[T] | None = None) -> R:
+    """Call a runner function with YAML config validation.
+
+    The YAML path is given by a command-line parameter.
+
+    The YAML payload is validated against the config type with Pydantic's
+    TypeAdapter, so config fields are type-checked before the runner is called.
+
+    If `config_type` is omitted, infer it by convention:
+    runner function name -> PascalCase + RunConfig.
+
+    Example:
+    filter -> FilterRunConfig
+    """
+
+    def runner_config_name() -> str:
+        return "".join(part.capitalize() for part in runner.__name__.split("_")) + "RunConfig"
+
+    def infer_run_config_type() -> type[T]:
+        package_name = runner.__module__.split(".", maxsplit=1)[0]
+        config_name = runner_config_name()
+        package = import_module(package_name)
+        try:
+            return getattr(package, config_name)
+        except AttributeError as exc:
+            message = f"Could not infer config type {config_name} from package {package_name}"
+            raise ValueError(message) from exc
+
     if len(sys.argv) != 2:
         print(f"Usage: python {sys.argv[0]} <config-path>")
         raise SystemExit(1)
     try:
-        return runner(read_run_config_as(Path(sys.argv[1]), config_type))
+        return runner(read_run_config_as(Path(sys.argv[1]), config_type or infer_run_config_type()))
     except Exception as exc:
         print(f"{Path(sys.argv[0]).stem.replace('_', ' ').capitalize()} failed: {exc}")
         raise SystemExit(1) from exc
