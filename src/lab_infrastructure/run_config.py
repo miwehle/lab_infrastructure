@@ -32,14 +32,14 @@ def git_status(repo_root: str | Path) -> str:
     return "no local changes" if out.strip() == "" else "local changes exist"
 
 
-def read_run_config(path: str | Path) -> dict[str, object]:
+def _read_run_config(path: str | Path) -> dict[str, object]:
     with Path(path).open("r", encoding="utf-8") as handle:
         return yaml.safe_load(handle) or {}
 
 
-def read_run_config_as[T](path: str | Path, config_type: type[T]) -> T:
+def _read_run_config_as[T](path: str | Path, config_type: type[T]) -> T:
     config_path = Path(path)
-    payload = read_run_config(config_path)
+    payload = _read_run_config(config_path)
     try:
         return TypeAdapter(config_type).validate_python(payload)
     except ValidationError as exc:
@@ -72,7 +72,7 @@ def run[T, R](runner: Callable[[T], R], config_path: str | Path, config_type: ty
             message = f"Could not infer config type {config_name} from package {package_name}"
             raise ValueError(message) from exc
 
-    return runner(read_run_config_as(config_path, config_type or infer_run_config_type()))
+    return runner(_read_run_config_as(config_path, config_type or infer_run_config_type()))
 
 
 def run_cli[T, R](runner: Callable[[T], R], config_type: type[T] | None = None) -> R:

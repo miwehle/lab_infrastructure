@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import sys
 import types
-from dataclasses import asdict
 from pathlib import Path
 
 import pytest
@@ -13,8 +12,6 @@ from pydantic.dataclasses import dataclass
 from lab_infrastructure.run_config import (
     git_head_commit,
     git_status,
-    read_run_config,
-    read_run_config_as,
     run,
     run_cli,
     write_run_config,
@@ -30,31 +27,6 @@ class ExampleConfig:
 @dataclass(frozen=True, kw_only=True, config=ConfigDict(extra="forbid"))
 class ExampleRunnerRunConfig:
     dataset: str
-
-
-def test_read_run_config_reads_yaml_file(tmp_path: Path):
-    config = ExampleConfig(dataset="demo")
-    config_path = tmp_path / "input_config.yaml"
-    config_path.write_text(
-        yaml.safe_dump({"split_config": asdict(config)}, sort_keys=False), encoding="utf-8"
-    )
-
-    assert read_run_config(config_path) == {"split_config": {"dataset": "demo", "batch_size": 32}}
-
-
-def test_read_run_config_as_validates_yaml_file(tmp_path: Path):
-    config_path = tmp_path / "input_config.yaml"
-    config_path.write_text(yaml.safe_dump({"dataset": "demo", "batch_size": 64}), encoding="utf-8")
-
-    assert read_run_config_as(config_path, ExampleConfig) == ExampleConfig(dataset="demo", batch_size=64)
-
-
-def test_read_run_config_as_rejects_unknown_field(tmp_path: Path):
-    config_path = tmp_path / "input_config.yaml"
-    config_path.write_text(yaml.safe_dump({"dataset": "demo", "unknown": True}), encoding="utf-8")
-
-    with pytest.raises(ValueError, match="unknown"):
-        read_run_config_as(config_path, ExampleConfig)
 
 
 def test_run_validates_and_runs(tmp_path: Path):

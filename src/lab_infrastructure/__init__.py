@@ -20,8 +20,6 @@ from lab_infrastructure.logging import close_logger, get_logger, log_calls
 from lab_infrastructure.run_config import (
     git_head_commit,
     git_status,
-    read_run_config,
-    read_run_config_as,
     run,
     run_cli,
     write_run_config,
@@ -47,7 +45,5 @@ __all__ = [
     "git_status",
     "run",
     "run_cli",
-    "read_run_config",
-    "read_run_config_as",
     "write_run_config",
 ]
