@@ -45,7 +45,7 @@ def read_run_config_as[T](path: str | Path, config_type: type[T]) -> T:
         raise ValueError(f"Invalid config in {config_path}: {exc}") from exc
 
 
-def run_config_cli[T, R](runner: Callable[[T], R], config_type: type[T]) -> R:
+def run[T, R](runner: Callable[[T], R], config_type: type[T]) -> R:
     if len(sys.argv) != 2:
         print(f"Usage: python {sys.argv[0]} <config-path>")
         raise SystemExit(1)
