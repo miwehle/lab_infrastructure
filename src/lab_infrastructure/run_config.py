@@ -55,13 +55,13 @@ def _apply_config_overrides(
 
 
 def _read_run_config_as[T](
-    path: str | Path, config_type: type[T], config_overrides: Mapping[str, object] | None = None
+    path: str | Path, run_config_type: type[T], config_overrides: Mapping[str, object] | None
 ) -> T:
     config_path = Path(path)
     payload = _read_run_config(config_path)
     _apply_config_overrides(payload, config_overrides)
     try:
-        return TypeAdapter(config_type).validate_python(payload)
+        return TypeAdapter(run_config_type).validate_python(payload)
     except ValidationError as exc:
         raise ValueError(f"Invalid config in {config_path}: {exc}") from exc
 
@@ -69,8 +69,6 @@ def _read_run_config_as[T](
 def run[T, R](
     runner: Callable[[T], R],
     config_path: str | Path,
-    config_type: type[T] | None = None,
-    *,
     config_overrides: Mapping[str, object] | None = None,
 ) -> R:
     """Call a runner function with YAML config validation.
@@ -78,7 +76,7 @@ def run[T, R](
     The YAML payload is validated against the config type with Pydantic's
     TypeAdapter, so config fields are type-checked before the runner is called.
 
-    If `config_type` is omitted, infer it by convention:
+    Infer the config type by convention:
     runner function name -> PascalCase + RunConfig.
 
     Example:
@@ -98,7 +96,7 @@ def run[T, R](
             message = f"Could not infer config type {config_name} from package {package_name}"
             raise ValueError(message) from exc
 
-    return runner(_read_run_config_as(config_path, config_type or infer_run_config_type(), config_overrides))
+    return runner(_read_run_config_as(config_path, infer_run_config_type(), config_overrides))
 
 
 def _parse_run_cli_args(
@@ -117,19 +115,14 @@ def _parse_run_cli_args(
     }
 
 
-def run_cli[T, R](
-    runner: Callable[[T], R],
-    config_type: type[T] | None = None,
-    *,
-    cli_override_map: Mapping[str, str] | None = None,
-) -> R:
+def run_cli[T, R](runner: Callable[[T], R], cli_override_map: Mapping[str, str] | None = None) -> R:
     """Call a runner function with the YAML path given by a command-line parameter."""
     if len(sys.argv) < 2:
         print(f"Usage: python {sys.argv[0]} <config-path>")
         raise SystemExit(1)
     try:
         config_path, config_overrides = _parse_run_cli_args(sys.argv, cli_override_map)
-        return run(runner, config_path, config_type, config_overrides=config_overrides)
+        return run(runner, config_path, config_overrides)
     except Exception as exc:
         print(f"{Path(sys.argv[0]).stem.replace('_', ' ').capitalize()} failed: {exc}")
         raise SystemExit(1) from exc

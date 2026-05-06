@@ -19,53 +19,44 @@ from lab_infrastructure.run_config import (
 
 
 @dataclass(frozen=True, kw_only=True, config=ConfigDict(extra="forbid"))
-class ExampleConfig:
+class ExampleRunConfig:
     dataset: str
     batch_size: int = 32
 
 
-@dataclass(frozen=True, kw_only=True, config=ConfigDict(extra="forbid"))
-class ExampleRunnerRunConfig:
-    dataset: str
+def _install_example_package(monkeypatch) -> None:
+    package = types.ModuleType("example_package")
+    package.ExampleRunConfig = ExampleRunConfig
+    monkeypatch.setitem(sys.modules, "example_package", package)
 
 
-def test_run_validates_and_runs(tmp_path: Path):
+def example(config: ExampleRunConfig) -> tuple[str, int]:
+    return config.dataset, config.batch_size
+
+
+example.__module__ = "example_package.api"
+
+
+def test_run_validates_and_runs(tmp_path: Path, monkeypatch):
+    _install_example_package(monkeypatch)
     config_path = tmp_path / "input_config.yaml"
     config_path.write_text(yaml.safe_dump({"dataset": "demo", "batch_size": 64}), encoding="utf-8")
 
-    assert run(lambda config: (config.dataset, config.batch_size), config_path, ExampleConfig) == ("demo", 64)
+    assert run(example, config_path) == ("demo", 64)
 
 
-def test_run_applies_config_overrides(tmp_path: Path):
+def test_run_applies_config_overrides(tmp_path: Path, monkeypatch):
+    _install_example_package(monkeypatch)
     config_path = tmp_path / "input_config.yaml"
     config_path.write_text(yaml.safe_dump({"dataset": "demo", "batch_size": 64}), encoding="utf-8")
 
-    result = run(
-        lambda config: (config.dataset, config.batch_size),
-        config_path,
-        ExampleConfig,
-        config_overrides={"dataset": "cli-demo", "batch_size": "16"},
-    )
+    result = run(example, config_path, config_overrides={"dataset": "cli-demo", "batch_size": "16"})
 
     assert result == ("cli-demo", 16)
 
 
-def test_run_infers_config_type(tmp_path: Path, monkeypatch):
-    package = types.ModuleType("example_package")
-    package.ExampleRunnerRunConfig = ExampleRunnerRunConfig
-    monkeypatch.setitem(sys.modules, "example_package", package)
-    config_path = tmp_path / "input_config.yaml"
-    config_path.write_text(yaml.safe_dump({"dataset": "demo"}), encoding="utf-8")
-
-    def example_runner(config: ExampleRunnerRunConfig) -> str:
-        return config.dataset
-
-    example_runner.__module__ = "example_package.api"
-
-    assert run(example_runner, config_path) == "demo"
-
-
 def test_run_cli_maps_cli_overrides(monkeypatch, tmp_path: Path):
+    _install_example_package(monkeypatch)
     config_path = tmp_path / "input_config.yaml"
     config_path.write_text(yaml.safe_dump({"dataset": "demo", "batch_size": 64}), encoding="utf-8")
     monkeypatch.setattr(
@@ -73,8 +64,7 @@ def test_run_cli_maps_cli_overrides(monkeypatch, tmp_path: Path):
     )
 
     result = run_cli(
-        lambda config: (config.dataset, config.batch_size),
-        ExampleConfig,
+        example,
         cli_override_map={"dataset": "dataset", "batch-size": "batch_size"},
     )
 
@@ -85,21 +75,25 @@ def test_run_cli_raises_with_usage_when_argument_is_missing(monkeypatch, capsys)
     monkeypatch.setattr(sys, "argv", ["train.py"])
 
     with pytest.raises(SystemExit, match="1"):
-        run_cli(lambda config: config, ExampleConfig)
+        run_cli(example)
 
     assert capsys.readouterr().out == "Usage: python train.py <config-path>\n"
 
 
 def test_run_cli_raises_with_script_name_in_error(monkeypatch, capsys, tmp_path: Path):
+    _install_example_package(monkeypatch)
     config_path = tmp_path / "input_config.yaml"
     config_path.write_text(yaml.safe_dump({"dataset": "demo"}), encoding="utf-8")
     monkeypatch.setattr(sys, "argv", ["comet_score.py", str(config_path)])
 
-    def fail(_config: ExampleConfig) -> None:
+    def fail(_config: ExampleRunConfig) -> None:
         raise ValueError("boom")
 
+    fail.__name__ = "example"
+    fail.__module__ = "example_package.api"
+
     with pytest.raises(SystemExit, match="1"):
-        run_cli(fail, ExampleConfig)
+        run_cli(fail)
 
     assert capsys.readouterr().out == "Comet score failed: boom\n"
 
