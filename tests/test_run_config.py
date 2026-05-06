@@ -36,6 +36,20 @@ def test_run_validates_and_runs(tmp_path: Path):
     assert run(lambda config: (config.dataset, config.batch_size), config_path, ExampleConfig) == ("demo", 64)
 
 
+def test_run_applies_config_overrides(tmp_path: Path):
+    config_path = tmp_path / "input_config.yaml"
+    config_path.write_text(yaml.safe_dump({"dataset": "demo", "batch_size": 64}), encoding="utf-8")
+
+    result = run(
+        lambda config: (config.dataset, config.batch_size),
+        config_path,
+        ExampleConfig,
+        config_overrides={"dataset": "cli-demo", "batch_size": "16"},
+    )
+
+    assert result == ("cli-demo", 16)
+
+
 def test_run_infers_config_type(tmp_path: Path, monkeypatch):
     package = types.ModuleType("example_package")
     package.ExampleRunnerRunConfig = ExampleRunnerRunConfig
@@ -49,6 +63,22 @@ def test_run_infers_config_type(tmp_path: Path, monkeypatch):
     example_runner.__module__ = "example_package.api"
 
     assert run(example_runner, config_path) == "demo"
+
+
+def test_run_cli_maps_cli_overrides(monkeypatch, tmp_path: Path):
+    config_path = tmp_path / "input_config.yaml"
+    config_path.write_text(yaml.safe_dump({"dataset": "demo", "batch_size": 64}), encoding="utf-8")
+    monkeypatch.setattr(
+        sys, "argv", ["train.py", str(config_path), "--dataset", "cli-demo", "--batch-size", "16"]
+    )
+
+    result = run_cli(
+        lambda config: (config.dataset, config.batch_size),
+        ExampleConfig,
+        cli_override_map={"dataset": "dataset", "batch-size": "batch_size"},
+    )
+
+    assert result == ("cli-demo", 16)
 
 
 def test_run_cli_raises_with_usage_when_argument_is_missing(monkeypatch, capsys):

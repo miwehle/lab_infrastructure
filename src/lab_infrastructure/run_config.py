@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import argparse
 import subprocess
 import sys
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from importlib import import_module
 from pathlib import Path
@@ -37,16 +38,41 @@ def _read_run_config(path: str | Path) -> dict[str, object]:
         return yaml.safe_load(handle) or {}
 
 
-def _read_run_config_as[T](path: str | Path, config_type: type[T]) -> T:
+def _apply_config_overrides(
+    payload: dict[str, object], config_overrides: Mapping[str, object] | None
+) -> None:
+    if config_overrides is None:
+        return
+    for path, value in config_overrides.items():
+        target = payload
+        parts = path.split(".")
+        for part in parts[:-1]:
+            nested = target.setdefault(part, {})
+            if not isinstance(nested, dict):
+                raise ValueError(f"Cannot override {path}: {part} is not a mapping.")
+            target = nested
+        target[parts[-1]] = value
+
+
+def _read_run_config_as[T](
+    path: str | Path, config_type: type[T], config_overrides: Mapping[str, object] | None = None
+) -> T:
     config_path = Path(path)
     payload = _read_run_config(config_path)
+    _apply_config_overrides(payload, config_overrides)
     try:
         return TypeAdapter(config_type).validate_python(payload)
     except ValidationError as exc:
         raise ValueError(f"Invalid config in {config_path}: {exc}") from exc
 
 
-def run[T, R](runner: Callable[[T], R], config_path: str | Path, config_type: type[T] | None = None) -> R:
+def run[T, R](
+    runner: Callable[[T], R],
+    config_path: str | Path,
+    config_type: type[T] | None = None,
+    *,
+    config_overrides: Mapping[str, object] | None = None,
+) -> R:
     """Call a runner function with YAML config validation.
 
     The YAML payload is validated against the config type with Pydantic's
@@ -72,16 +98,38 @@ def run[T, R](runner: Callable[[T], R], config_path: str | Path, config_type: ty
             message = f"Could not infer config type {config_name} from package {package_name}"
             raise ValueError(message) from exc
 
-    return runner(_read_run_config_as(config_path, config_type or infer_run_config_type()))
+    return runner(_read_run_config_as(config_path, config_type or infer_run_config_type(), config_overrides))
 
 
-def run_cli[T, R](runner: Callable[[T], R], config_type: type[T] | None = None) -> R:
+def _parse_run_cli_args(
+    argv: Sequence[str], cli_override_map: Mapping[str, str] | None
+) -> tuple[Path, dict[str, object]]:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config_path")
+    for cli_name in cli_override_map or {}:
+        parser.add_argument(f"--{cli_name}", dest=cli_name)
+    args = parser.parse_args(argv[1:])
+    values = vars(args)
+    return Path(args.config_path), {
+        config_path: values[cli_name]
+        for cli_name, config_path in (cli_override_map or {}).items()
+        if values[cli_name] is not None
+    }
+
+
+def run_cli[T, R](
+    runner: Callable[[T], R],
+    config_type: type[T] | None = None,
+    *,
+    cli_override_map: Mapping[str, str] | None = None,
+) -> R:
     """Call a runner function with the YAML path given by a command-line parameter."""
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print(f"Usage: python {sys.argv[0]} <config-path>")
         raise SystemExit(1)
     try:
-        return run(runner, Path(sys.argv[1]), config_type)
+        config_path, config_overrides = _parse_run_cli_args(sys.argv, cli_override_map)
+        return run(runner, config_path, config_type, config_overrides=config_overrides)
     except Exception as exc:
         print(f"{Path(sys.argv[0]).stem.replace('_', ' ').capitalize()} failed: {exc}")
         raise SystemExit(1) from exc
