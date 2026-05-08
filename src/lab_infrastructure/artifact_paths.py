@@ -16,5 +16,5 @@ def next_numbered_path(root: Path, prefix: str, n: int = 1) -> Path:
     return root / f"{prefix}{n}"
 
 
-def dataset_ref(datasets_root: Path, dataset_path: Path) -> str:
-    return dataset_path.relative_to(datasets_root).as_posix()
+def artifact_ref(root: Path, artifact_path: Path) -> str:
+    return artifact_path.relative_to(root).as_posix()
