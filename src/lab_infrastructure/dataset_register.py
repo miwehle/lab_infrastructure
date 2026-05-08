@@ -7,13 +7,6 @@ from pathlib import Path
 from lab_infrastructure.run_config import git_head_commit
 
 
-def next_numbered_path(root: Path, prefix: str) -> Path:
-    n = 1
-    while (root / f"{prefix}{n}").exists():
-        n += 1
-    return root / f"{prefix}{n}"
-
-
 def append_dataset_register(
     datasets_root: Path, *, parent: str, operation: str, dataset: str, repo_root: Path
 ) -> None:
