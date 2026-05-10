@@ -1,33 +1,25 @@
 from __future__ import annotations
 
-import csv
 from datetime import datetime
 from pathlib import Path
 
+from lab_infrastructure.register_csv import insert_row
 from lab_infrastructure.run_config import git_head_commit
 
 
-def append_dataset_register(
+def register_dataset(
     datasets_root: Path, *, parent: str, operation: str, dataset: str, repo_root: Path
 ) -> None:
-    register_path = datasets_root / "dataset_register.csv"
-    register_path.parent.mkdir(parents=True, exist_ok=True)
-    write_header = not register_path.exists()
-    with register_path.open("a", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=["timestamp", "dataset", "operation", "parent", "git_commit"],
-            delimiter=";",
-        )
-        if write_header:
-            writer.writeheader()
-        commit = git_head_commit(repo_root) or ""
-        writer.writerow(
-            {
-                "timestamp": datetime.now().isoformat(timespec="seconds"),
-                "dataset": dataset,
-                "operation": operation,
-                "parent": parent,
-                "git_commit": commit[:20],
-            }
-        )
+    commit = git_head_commit(repo_root) or ""
+    insert_row(
+        datasets_root / "dataset_register.csv",
+        ["dataset", "operation", "parent", "timestamp", "git_commit"],
+        {
+            "dataset": dataset,
+            "operation": operation,
+            "parent": parent,
+            "timestamp": datetime.now().isoformat(timespec="seconds"),
+            "git_commit": commit[:20],
+        },
+        artifact_key="dataset",
+    )
