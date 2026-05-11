@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from lab_infrastructure.register_csv import insert_row
+from lab_infrastructure.csv_register import insert_row
 
 
 def _read_rows(path: Path) -> list[dict[str, str]]:
